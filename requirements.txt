@@ -2,3 +2,9 @@ Werkzeug==0.16.1
 flask
 SQLAlchemy
 Flask-SQLAlchemy
+Marshmallow
+Marshmallow-SQLAlchemy
+bcrypt
+Flask-bcrypt
+simplejson
+flask-marshmallow

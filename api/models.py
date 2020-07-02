@@ -8,8 +8,8 @@ class Usuario(db.Model):
     contrasena = db.Column(db.String(255))
     empleado_id = db.Column(db.Integer, db.ForeignKey('empleado.id'))
     empleado = db.relationship("Empleado", back_populates="usuario")
-    tipo_id = db.Column(db.Integer, db.ForeignKey('tipo_usuario.id'))
-    reparaciones = db.relationship('Reparacion')
+    tipo_usuario_id = db.Column(db.Integer, db.ForeignKey('tipo_usuario.id'))
+    reparaciones = db.relationship('Reparacion', backref='usuario')
 
 class Empleado(db.Model):
     __tablename__ = 'empleado'
@@ -17,7 +17,7 @@ class Empleado(db.Model):
     nombre = db.Column(db.String(64))
     apellidos = db.Column(db.String(128))
     email = db.Column(db.String(128),unique=True)
-    fecha_contratacion = db.Column(db.DateTime, nullable=False, default=datetime.now())
+    fecha_contratacion = db.Column(db.DateTime, nullable=False, default=datetime.now)
     telefono = db.Column(db.String(10),unique=True)
     direccion = db.Column(db.String(255))
     usuario = db.relationship("Usuario", uselist=False, back_populates="empleado")
@@ -27,16 +27,16 @@ class TipoUsuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     denominacion_usuario = db.Column(db.String(64))
     descripcion = db.Column(db.String(128))
-    usuarios = db.relationship('Usuario')
+    usuarios = db.relationship('Usuario',backref='tipo_usuario')
 
 class Reparacion(db.Model):
     __tablename__ = 'reparacion'
     id = db.Column(db.Integer, primary_key=True)
-    fecha_inicio = db.Column(db.DateTime, nullable=False, default=datetime.now())
+    fecha_realizacion = db.Column(db.DateTime, nullable=False, default=datetime.now)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
     cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id'))
     garantia_id = db.Column(db.Integer, db.ForeignKey('garantia.id'))
-    reparaciones_detalle = db.relationship('ReparacionDetalle')
+    reparaciones_detalle = db.relationship('ReparacionDetalle',backref='reparacion')
     total = db.Column(db.Numeric(precision=2))
 
 class Cliente(db.Model):
@@ -45,10 +45,10 @@ class Cliente(db.Model):
     nombre = db.Column(db.String(64))
     apellidos = db.Column(db.String(128))
     email = db.Column(db.String(64),unique=True)
-    fecha_registro = db.Column(db.DateTime, nullable=False, default=datetime.now())
-    vehiculo = db.relationship("Vehiculo", uselist=False, back_populates="cliente")
     telefono = db.Column(db.String(10),unique=True)
-    reparaciones = db.relationship('Reparacion')
+    fecha_registro = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    vehiculo = db.relationship("Vehiculo", uselist=False, back_populates="cliente")
+    reparaciones = db.relationship('Reparacion',backref='cliente')
 
 class Vehiculo(db.Model):
     __tablename__ = 'vehiculo'
@@ -58,16 +58,15 @@ class Vehiculo(db.Model):
     cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id'))
     cliente = db.relationship("Cliente", back_populates="vehiculo")
     descripcion = db.Column(db.String(128))
-    fecha_registro = db.Column(db.DateTime, nullable=False, default=datetime.now())
+    fecha_registro = db.Column(db.DateTime, nullable=False, default=datetime.now)
 
 class Garantia(db.Model):
     __tablename__ = 'garantia'
     id = db.Column(db.Integer, primary_key=True)
-    fecha_inicio = db.Column(db.DateTime, nullable=False, default=datetime.now())
+    fecha_inicio = db.Column(db.DateTime, nullable=False, default=datetime.now)
     fecha_vencimiento = db.Column(db.DateTime, nullable=False, default=datetime.now()+timedelta(days=15.0))
-    reparaciones = db.relationship('Reparacion')
+    reparaciones = db.relationship('Reparacion', backref='garantia')
 
-    
 class ReparacionDetalle(db.Model):
     __tablename__ = 'reparacion_detalle'
     id = db.Column(db.Integer, primary_key=True)
@@ -82,7 +81,7 @@ class Parte(db.Model):
     tipo_parte_id = db.Column(db.Integer, db.ForeignKey('tipo_parte.id'))
     descripcion_parte = db.Column(db.String(128))
     precio = db.Column(db.Numeric(precision=2))
-    reparaciones_detalle = db.relationship('ReparacionDetalle')
+    reparaciones_detalle = db.relationship('ReparacionDetalle', backref='parte')
     inventario = db.relationship("Inventario", uselist=False, back_populates="parte")
 
 class TipoParte(db.Model):
@@ -90,11 +89,11 @@ class TipoParte(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     denominacion_parte = db.Column(db.String(64))
     descripcion_tipo_parte = db.Column(db.String(128))
-    partes = db.relationship('Parte')
+    partes = db.relationship('Parte',backref='tipo_parte')
 
 class Inventario(db.Model):
     __tablename__ = 'inventario'
     id = db.Column(db.Integer, primary_key=True)
     parte_id = db.Column(db.Integer, db.ForeignKey('parte.id'))
-    parte = db.relationship("Parte", back_populates="inventario")
     cantidad = db.Column(db.Integer)
+    parte = db.relationship("Parte", back_populates="inventario")
