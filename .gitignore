@@ -2,5 +2,6 @@ llantera_env/
 llantera_env/*
 api/__py_cache__/*
 api/__py_cache__/
+api/blueprints/__py_cache__/*
 .vscode/
 .vscode/*

@@ -1,10 +1,12 @@
 Werkzeug==0.16.1
 flask
 SQLAlchemy
-Flask-SQLAlchemy
-Marshmallow
-Marshmallow-SQLAlchemy
+marshmallow
+flask-sqlalchemy 
+marshmallow-sqlalchemy
 bcrypt
-Flask-bcrypt
+flask-bcrypt
 simplejson
 flask-marshmallow
+zappa
+mysqlclient
