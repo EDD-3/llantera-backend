@@ -9,7 +9,7 @@ tipo_usuario_schema = TipoUsuarioSchema()
 
 
 @tipo_usuario.route("/api/tiposUsuario", methods=["GET"])
-def get_stocks():
+def get_user_types():
     try:
         lst_tipo_usuario = []
         for tipo_usuario in TipoUsuario.query.all():
@@ -20,18 +20,18 @@ def get_stocks():
 
 
 @tipo_usuario.route("/api/tipoUsuario/<id>", methods=["GET"])
-def get_stock(id):
+def get_user_type(id):
     try:
         tipo_usuario = TipoUsuario.query.filter_by(id=id).first()
         if not tipo_usuario:
-            return jsonify({"error": "Invalid id, stock was not found"}), 400
+            return jsonify({"error": "Invalid id, user type was not found"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     return tipo_usuario_schema.dump(tipo_usuario), 200
 
 
 @tipo_usuario.route("/api/tipoUsuario", methods=["POST"])
-def create_stock():
+def create_user_type():
     try:
         nuevo_tipo_usuario = jloads(request.data)
         tipo_usuario = TipoUsuario(
@@ -41,6 +41,30 @@ def create_stock():
 
         db.session.add(tipo_usuario)
         db.session.commit()
-        return jsonify({"Message": "Customer successfully created"}), 200
+        return jsonify({"Message": "User type successfully created"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@tipo_usuario.route("/api/tipoUsuario/<id>", methods=["DELETE"])
+def delete_user_type(id):
+    try:
+        delete_tipo_usuario = TipoUsuario.query.filter_by(id=id).first()
+        if not delete_tipo_usuario:
+            return jsonify({"error": "Invalid id, user type was not found"}), 400
+        db.session.delete(delete_tipo_usuario)
+        db.session.commit()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    return jsonify({"Deleted": "Success"}), 200
+
+@tipo_usuario.route("/api/tipoUsuario/<id>", methods=["PUT"])
+def update_user_type(id):
+    try:
+        update_values = jloads(request.data)
+        if not TipoUsuario.query.filter_by(id=id).first():
+            return jsonify({"error": "Invalid id, user type was not found"}), 400
+        TipoUsuario.query.filter_by(id=id).update(update_values)
+        db.session.commit()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    return jsonify({"Update": "Success"}), 200
