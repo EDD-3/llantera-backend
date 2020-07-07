@@ -10,3 +10,4 @@ simplejson
 flask-marshmallow
 zappa
 mysqlclient
+pymysql
