@@ -11,3 +11,4 @@ flask-marshmallow
 zappa
 mysqlclient
 pymysql
+flask-cors

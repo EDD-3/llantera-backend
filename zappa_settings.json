@@ -4,10 +4,10 @@
         "aws_region": "us-west-2",
         "profile_name": "default",
         "lambda_description":"Endpoint de llantera",
-        "delete_local_zip":true,
-        "project_name": "llantera-api",
+        "delete_local_zip": false,
+        "project_name": "llantera",
         "runtime": "python3.7",
-        "s3_bucket": "lambda-angular-ub",
+        "s3_bucket": "lambda-python-eduardo",
         "manage_roles":true,
         "timeout_seconds":15
     }

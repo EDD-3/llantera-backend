@@ -3,9 +3,11 @@ from api.models import TipoUsuario
 from api.schemas import TipoUsuarioSchema
 from api import bcrypt, db
 from json import loads as jloads
+from flask_cors import CORS
 
 tipo_usuario = Blueprint("tipo_usuario", __name__)
 tipo_usuario_schema = TipoUsuarioSchema()
+CORS(tipo_usuario)
 
 
 @tipo_usuario.route("/api/tiposUsuario", methods=["GET"])

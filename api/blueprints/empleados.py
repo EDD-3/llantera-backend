@@ -3,10 +3,11 @@ from json import loads as jloads
 from api.models import Empleado
 from api.schemas import EmpleadoSchema
 from api import bcrypt, db
+from flask_cors import CORS
 
 empleado = Blueprint("empleado", __name__)
 empleado_schema = EmpleadoSchema()
-
+CORS(empleado)
 
 @empleado.route("/api/empleados", methods=["GET"])
 def get_employees():

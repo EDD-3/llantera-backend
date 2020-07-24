@@ -3,10 +3,11 @@ from api.models import Usuario
 from api.schemas import UsuarioSchema
 from api import bcrypt, db
 from json import loads as jloads
+from flask_cors import CORS
 
 usuario = Blueprint("usuario", __name__)
 usuario_schema = UsuarioSchema()
-
+CORS(usuario)
 
 @usuario.route("/api/usuarios", methods=["GET"])
 def get_users():
