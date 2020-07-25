@@ -1,42 +1,74 @@
 from flask import Flask, escape, request, Blueprint, current_app, jsonify
+from json import loads as jloads
 from api.models import Garantia
 from api.schemas import GarantiaSchema
-from api import bcrypt, db
-from json import loads as jloads
+from flask_cors import CORS
+from api.utils import helpers
 
 garantia = Blueprint("garantia", __name__)
 garantia_schema = GarantiaSchema()
+CORS(garantia)
 
 
 @garantia.route("/api/garantias", methods=["GET"])
 def get_warranties():
     try:
-        lst_garantia = []
-        for garantia in Garantia.query.all():
-            lst_garantia.append(garantia_schema.dump(garantia))
+        return helpers.get_rows(Garantia,garantia_schema)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    return jsonify(lst_garantia), 200
 
 
 @garantia.route("/api/garantia/<id>", methods=["GET"])
 def get_warranty(id):
     try:
-        garantia = Garantia.query.filter_by(id=id).first()
-        if not garantia:
-            return jsonify({"error": "Invalid id, warranty was not found"}), 400
+        examiner = helpers.Examiner(
+            id=id,
+            model=Garantia,
+            schema=garantia_schema,
+        )
+        return helpers.get_row(examiner)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    return garantia_schema.dump(garantia), 200
 
 
 @garantia.route("/api/garantia", methods=["POST"])
 def create_warranty():
     try:
-        nuevo_garantia = jloads(request.data)
-        garantia = Garantia()
-        db.session.add(garantia)
-        db.session.commit()
-        return jsonify({"Message": "Warranty successfully created"}), 200
+        examiner = helpers.Examiner(
+            model=Garantia,
+            schema=garantia_schema,
+            unwanted_columns=['id','fecha_vencimiento'],
+            json_data=jloads(request.data)
+        )
+        return helpers.insert_row(examiner)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@garantia.route("/api/garantia/<id>", methods=["DELETE"])
+def delete_warranty(id):
+    try:
+        examiner = helpers.Examiner(
+            id=id,
+            model=Garantia,
+            schema=garantia_schema
+        )
+        return helpers.delete_row(examiner)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@garantia.route("/api/garantia/<id>", methods=["PUT"])
+def update_warranty(id):
+    try:
+        examiner = helpers.Examiner(
+            id=id,
+            model=Garantia,
+            schema=garantia_schema,
+            unwanted_columns=["id",'fecha_vencimiento'],
+            json_data=jloads(request.data)
+        )
+        return helpers.update_row(examiner)
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500

@@ -1,48 +1,72 @@
 from flask import Flask, escape, request, Blueprint, current_app, jsonify
-import json
 from api.models import Reparacion
 from api.schemas import ReparacionSchema
-from api import bcrypt, db
+from json import loads as jloads
+from flask_cors import CORS
+from api.utils import helpers
 
 reparacion = Blueprint("reparacion", __name__)
 reparacion_schema = ReparacionSchema()
-
+CORS(reparacion)
 
 @reparacion.route("/api/reparaciones", methods=["GET"])
 def get_repairs():
     try:
-        lst_reparacion = []
-        for reparacion in Reparacion.query.all():
-            lst_reparacion.append(reparacion_schema.dump(reparacion))
+        return helpers.get_rows(Reparacion,reparacion_schema)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    return jsonify(lst_reparacion), 200
 
 
 @reparacion.route("/api/reparacion/<id>", methods=["GET"])
 def get_repair(id):
     try:
-        reparacion = Reparacion.query.filter_by(id=id).first()
-        if not reparacion:
-            return jsonify({"error": "Invalid id, record not found"}), 400
+        examiner = helpers.Examiner(
+            id=id,
+            model=Reparacion,
+            schema=reparacion_schema
+        )
+        return helpers.get_row(examiner)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    return reparacion_schema.dump(reparacion), 200
 
 
 @reparacion.route("/api/reparacion", methods=["POST"])
 def create_repair():
     try:
-        nuevo_reparacion = json.loads(request.data)
-        reparacion = Reparacion(
-            usuario_id=nuevo_reparacion["usuario_id"],
-            cliente_id=nuevo_reparacion["cliente_id"],
-            garantia_id=nuevo_reparacion["garantia_id"],
-            total=nuevo_reparacion["total"],
+        examiner = helpers.Examiner(
+            model=Reparacion,
+            schema=reparacion_schema,
+            unwanted_columns=['id', 'fecha_realizacion'],
+            json_data=jloads(request.data)
         )
+        return helpers.insert_row(examiner)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-        db.session.add(reparacion)
-        db.session.commit()
-        return jsonify({"Message": "Reparacion successfully created"}), 200
+
+@reparacion.route("/api/reparacion/<id>", methods=["DELETE"])
+def delete_repair(id):
+    try:
+        examiner = helpers.Examiner(
+            id=id,
+            model=Reparacion,
+            schema=reparacion_schema
+        )
+        return helpers.delete_row(examiner)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@reparacion.route("/api/reparacion/<id>", methods=["PUT"])
+def update_repair(id):
+    try:
+        examiner = helpers.Examiner(
+            id=id,
+            model=Reparacion,
+            schema=reparacion_schema,
+            unwanted_columns=["id", 'fecha_realizacion'],
+            json_data=jloads(request.data)
+        )
+        return helpers.update_row(examiner)
     except Exception as e:
         return jsonify({"error": str(e)}), 500

@@ -1,51 +1,72 @@
 from flask import Flask, escape, request, Blueprint, current_app, jsonify
 from api.models import ReparacionDetalle
 from api.schemas import ReparacionDetalleSchema
-from api import bcrypt, db, app
 from json import loads as jloads
+from flask_cors import CORS
+from api.utils import helpers
 
 reparacion_detalle = Blueprint("reparacion_detalle", __name__)
 reparacion_detalle_schema = ReparacionDetalleSchema()
+CORS(reparacion_detalle)
 
 
 @reparacion_detalle.route("/api/reparacionDetalles", methods=["GET"])
 def get_repair_details():
     try:
-        lst_reparacion_detalle = []
-        for reparacion_detalle in ReparacionDetalle.query.all():
-            lst_reparacion_detalle.append(
-                reparacion_detalle_schema.dump(reparacion_detalle)
-            )
+        return helpers.get_rows(ReparacionDetalle,reparacion_detalle_schema)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    return jsonify(lst_reparacion_detalle), 200
 
 
 @reparacion_detalle.route("/api/reparacionDetalle/<id>", methods=["GET"])
-def get_repair(id):
+def get_repair_detail(id):
     try:
-        reparacion_detalle = ReparacionDetalle.query.filter_by(id=id).first()
-        if not reparacion_detalle:
-            return jsonify({"error": "Invalid id, repair details was not found"}), 400
+        examiner = helpers.Examiner(
+            id=id,
+            model=ReparacionDetalle,
+            schema=reparacion_detalle_schema
+        )
+        return helpers.get_row(examiner)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    return reparacion_detalle_schema.dump(reparacion_detalle), 200
 
 
 @reparacion_detalle.route("/api/reparacionDetalle", methods=["POST"])
-def create_repair():
+def create_part_type():
     try:
-        nuevo_reparacion_detalle = jloads(request.data)
+        examiner = helpers.Examiner(
+            model=ReparacionDetalle,
+            schema=reparacion_detalle_schema,
+            unwanted_columns=['id'],
+            json_data=jloads(request.data)
+        )
+        return helpers.insert_row(examiner)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-        for reparacion_detalle in nuevo_reparacion_detalle:
-            reparacion_detalle = ReparacionDetalle(
-                parte_id=reparacion_detalle["parte_id"],
-                reparacion_id=reparacion_detalle["reparacion_id"],
-                cantidad=reparacion_detalle["cantidad"],
-            )
-            db.session.add(reparacion_detalle)
+@reparacion_detalle.route("/api/reparacionDetalle/<id>", methods=["DELETE"])
+def delete_part_type(id):
+    try:
+        examiner = helpers.Examiner(
+            id=id,
+            model=ReparacionDetalle,
+            schema=reparacion_detalle_schema
+        )
+        return helpers.delete_row(examiner)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-        db.session.commit()
-        return jsonify({"Message": "Repair details were successfully created"}), 200
+
+@reparacion_detalle.route("/api/reparacionDetalle/<id>", methods=["PUT"])
+def update_part_type(id):
+    try:
+        examiner = helpers.Examiner(
+            id=id,
+            model=ReparacionDetalle,
+            schema=reparacion_detalle_schema,
+            unwanted_columns=["id"],
+            json_data=jloads(request.data)
+        )
+        return helpers.update_row(examiner)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
