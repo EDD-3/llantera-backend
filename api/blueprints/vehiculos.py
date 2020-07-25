@@ -1,9 +1,10 @@
 from flask import Flask, escape, request, Blueprint, current_app, jsonify
-import json
 from api.models import Vehiculo
 from api.schemas import VehiculoSchema
-from api import bcrypt, db
+from api import db
 from datetime import date
+from json import loads as jloads
+from flask_cors import CORS
 
 vehiculo = Blueprint("vehiculo", __name__)
 vehiculo_schema = VehiculoSchema()
@@ -12,7 +13,7 @@ vehiculo_schema = VehiculoSchema()
 @vehiculo.route("/api/vehiculos", methods=["GET"])
 def get_vehicles():
     try:
-        lst_vehiculo = []
+        vehiculos = []
         for vehiculo in Vehiculo.query.all():
             lst_vehiculo.append(vehiculo_schema.dump(vehiculo))
     except Exception as e:

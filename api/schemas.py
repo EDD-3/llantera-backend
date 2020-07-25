@@ -2,13 +2,11 @@ from api.models import *
 from api import ma
 import simplejson as json
 
-#DONE
 class TipoParteSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = TipoParte
         include_relationships = True
 
-#DONE
 class ParteSchema(ma.SQLAlchemySchema):
     class Meta:
         model = Parte
@@ -20,7 +18,6 @@ class ParteSchema(ma.SQLAlchemySchema):
     descripcion_parte = ma.auto_field()
     precio = ma.auto_field()
 
-#DONE
 class InventarioSchema(ma.SQLAlchemySchema):
     class Meta:
         model = Inventario
@@ -30,19 +27,16 @@ class InventarioSchema(ma.SQLAlchemySchema):
     parte = ma.Nested(ParteSchema)
     cantidad = ma.auto_field()
 
-#DONE
 class TipoUsuarioSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = TipoUsuario
         include_relationships = True
 
-#DONE
 class EmpleadoSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Empleado
         include_relationships = True
 
-#DONE
 class UsuarioSchema(ma.SQLAlchemySchema):
     class Meta:
         model = Usuario
@@ -53,7 +47,6 @@ class UsuarioSchema(ma.SQLAlchemySchema):
     tipo_usuario = ma.Nested(TipoUsuarioSchema(exclude=('descripcion','usuarios')))
     empleado = ma.Nested(EmpleadoSchema(exclude=('usuario',)))
 
-#DONE
 class VehiculoSchema(ma.SQLAlchemySchema):
     class Meta:
         model = Vehiculo
@@ -66,7 +59,6 @@ class VehiculoSchema(ma.SQLAlchemySchema):
     descripcion = ma.auto_field()
     fecha_registro = ma.auto_field()
 
-#DONE
 class ClienteSchema(ma.SQLAlchemySchema):
     class Meta:
         model = Cliente
@@ -79,13 +71,11 @@ class ClienteSchema(ma.SQLAlchemySchema):
     fecha_registro = ma.auto_field()
     vehiculo = ma.Nested(VehiculoSchema(exclude=('cliente_id',)))
 
-#DONE
 class GarantiaSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Garantia
         include_relationships = True
 
-#DONE
 class ReparacionDetalleSchema(ma.SQLAlchemySchema):
     class Meta:
         model = ReparacionDetalle
@@ -95,7 +85,6 @@ class ReparacionDetalleSchema(ma.SQLAlchemySchema):
     reparacion_id = ma.auto_field()
     cantidad = ma.auto_field()
 
-#DONE
 class ReparacionSchema(ma.SQLAlchemySchema):
     class Meta:
         model = Reparacion

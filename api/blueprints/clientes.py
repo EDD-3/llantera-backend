@@ -1,48 +1,70 @@
 from flask import Flask, escape, request, Blueprint, current_app, jsonify
-import json
 from api.models import Cliente
 from api.schemas import ClienteSchema
-from api import bcrypt, db
+from json import loads as jloads
+from flask_cors import CORS
+from api.utils import helpers
 
 cliente = Blueprint("cliente", __name__)
 cliente_schema = ClienteSchema()
+CORS(cliente)
 
 
 @cliente.route("/api/clientes", methods=["GET"])
-def get_employees():
+def get_clients():
     try:
-        lst_cliente = []
-        for cliente in Cliente.query.all():
-            lst_cliente.append(cliente_schema.dump(cliente))
+        return helpers.get_rows(Cliente, cliente_schema)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    return jsonify(lst_cliente), 200
 
 
 @cliente.route("/api/cliente/<id>", methods=["GET"])
-def get_employee(id):
+def get_client(id):
     try:
-        cliente = Cliente.query.filter_by(id=id).first()
-        if not cliente:
-            return jsonify({"error": "Invalid id, customer was not found"}), 400
+        examiner = helpers.Examiner(
+            id=id,
+            model=Cliente,
+            schema=cliente_schema
+        )
+        return helpers.get_row(examiner)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    return cliente_schema.dump(cliente), 200
+
 
 
 @cliente.route("/api/cliente", methods=["POST"])
-def create_employee():
+def create_client():
     try:
-        nuevo_cliente = json.loads(request.data)
-        cliente = Cliente(
-            nombre=nuevo_cliente["nombre"],
-            apellidos=nuevo_cliente["apellidos"],
-            email=nuevo_cliente["email"],
-            telefono=nuevo_cliente["telefono"],
-        )
+        examiner = helpers.Examiner(model=Cliente,schema=cliente_schema,unwanted_columns=['id','fecha_registro'],json_data=jloads(request.data))
+        return helpers.insert_row(examiner)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-        db.session.add(cliente)
-        db.session.commit()
-        return jsonify({"Message": "Customer successfully created"}), 200
+@cliente.route("/api/cliente/<id>", methods=["DELETE"])
+def delete_client(id):
+    try:
+        examiner = helpers.Examiner(
+            id=id,
+            model=Cliente,
+            schema=cliente_schema,
+        )
+        return helpers.delete_row(examiner)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@cliente.route("/api/cliente/<id>", methods=["PUT"])
+def update_client(id):
+    try:
+        examiner = helpers.Examiner(
+            id=id,
+            model=Cliente,
+            schema=cliente_schema,
+            json_data=jloads(request.data),
+            unwanted_columns=["id","fecha_registro"],
+        )
+        return helpers.update_row(examiner)
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500

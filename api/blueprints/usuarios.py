@@ -4,6 +4,8 @@ from api.schemas import UsuarioSchema
 from api import bcrypt, db
 from json import loads as jloads
 from flask_cors import CORS
+from api import bcrypt
+from api.utils import helpers
 
 usuario = Blueprint("usuario", __name__)
 usuario_schema = UsuarioSchema()
@@ -42,105 +44,59 @@ def get_user(id):
         return jsonify({"error": str(e)}), 500
 
 
-@usuario.route("/api/usuario/login", methods=["GET"])
-def verify_login():
-    try:
-        login_credentials = jloads(request.data)
-        usuario = Usuario.query.filter_by(
-            nombre_usuario=login_credentials["nombre_usuario"]
-        ).first()
+# @usuario.route("/api/usuario/login", methods=["GET"])
+# def verify_login():
+#     try:
+#         login_credentials = jloads(request.data)
+#         usuario = Usuario.query.filter_by(
+#             nombre_usuario=login_credentials["nombre_usuario"]
+#         ).first()
 
-        if (usuario is not None) and bcrypt.check_password_hash(
-            usuario.contrasena, login_credentials["contrasena"]
-        ):
-            return jsonify({"validCredentials": True}), 200
+#         if (usuario is not None) and bcrypt.check_password_hash(
+#             usuario.contrasena, login_credentials["contrasena"]
+#         ):
+#             return jsonify({"validCredentials": True}), 200
 
-        else:
-            return jsonify({"validCredentials": False}), 400
+#         else:
+#             return jsonify({"validCredentials": False}), 400
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
 
 
 @usuario.route("/api/usuario", methods=["POST"])
 def create_user():
     try:
         nuevo_usuario = jloads(request.data)
-        table_columns = [
-            column.name for column in Usuario.__table__.columns if column.name != "id"
-        ]
+        nuevo_usuario["contrasena"] = bcrypt.generate_password_hash(nuevo_usuario["contrasena"])
+        examiner = helpers.Examiner(model=Usuario,schema=usuario_schema,unwanted_columns=['id'],json_data=nuevo_usuario)
 
-        for field in nuevo_usuario:
-            if field in table_columns:
-                table_columns.remove(field)
-
-        if len(table_columns) == 0:
-            usuario = Usuario(
-                nombre_usuario=nuevo_usuario["nombre_usuario"],
-                contrasena=bcrypt.generate_password_hash(nuevo_usuario["contrasena"]),
-                empleado_id=nuevo_usuario["empleado_id"],
-                tipo_usuario_id=nuevo_usuario["tipo_usuario_id"],
-            )
-            db.session.add(usuario)
-            db.session.commit()
-            nuevo_usuario = Usuario.query.order_by(Usuario.id.desc()).first()
-
-        else:
-            return jsonify({"missing fields":table_columns}), 400
+        return helpers.insert_row(examiner)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-    return usuario_schema.dump(nuevo_usuario), 200
 
 
 @usuario.route("/api/usuario/<id>", methods=["DELETE"])
 def delete_user(id):
     try:
+        examiner = helpers.Examiner(
+            id=id,model=Usuario,schema=usuario_schema
+        )
         usuario = Usuario.query.filter_by(id=id).first()
 
-        if usuario is not None:
-            db.session.delete(usuario)
-            db.session.commit()
-
-        else:
-            return jsonify({"error": "Invalid id, user was not found"}), 404
+        return helpers.delete_row(examiner)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-    return jsonify({"message": "Success"}), 200
 
 
 @usuario.route("/api/usuario/<id>", methods=["PUT"])
 def update_user(id):
     try:
-        update_dict = jloads(request.data)
-        table_columns = [
-            column.name for column in Usuario.__table__.columns if column.name != "id"
-        ]
-        usuario = Usuario.query.filter_by(id=id).first()
-
-        for field in update_dict:
-
-            if field in table_columns:
-                table_columns.remove(field)
-        
-        if usuario is not None:
-            if len(table_columns) == 0:
-                update_dict["contrasena"] = bcrypt.generate_password_hash(
-                    update_dict["contrasena"]
-            )
-                Usuario.query.filter_by(id=id).update(update_dict)
-                db.session.commit()
-
-            else:
-                return jsonify({"missing fields": table_columns}),400
-
-        else:
-            return jsonify({"error": "Invalid id, user not found"}), 404
-            
+        nuevo_usuario = jloads(request.data)
+        nuevo_usuario["contrasena"] = bcrypt.generate_password_hash(nuevo_usuario["contrasena"])
+        examiner = helpers.Examiner(id=id,model=Usuario,schema=usuario_schema,unwanted_columns=['id'],json_data=nuevo_usuario)
+        return helpers.update_row(examiner)      
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-    return ({"message": "Success"}), 200
