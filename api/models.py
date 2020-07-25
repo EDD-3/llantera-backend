@@ -7,9 +7,9 @@ class Usuario(db.Model):
     nombre_usuario = db.Column(db.String(64),unique=True)
     contrasena = db.Column(db.String(255))
     empleado_id = db.Column(db.Integer, db.ForeignKey('empleado.id', ondelete='SET NULL'), nullable=True)
-    empleado = db.relationship("Empleado", back_populates="usuario") #one-to-one
     tipo_usuario_id = db.Column(db.Integer, db.ForeignKey('tipo_usuario.id', ondelete='SET NULL'), nullable=True)
-    reparaciones = db.relationship('Reparacion', backref='usuario', cascade="all, delete") #one-to-many
+    reparaciones = db.relationship('Reparacion', backref='usuario', cascade="all, delete", lazy='subquery') #one-to-many
+    empleado = db.relationship("Empleado", back_populates="usuario", lazy='subquery') #one-to-one
 
 class Empleado(db.Model):
     __tablename__ = 'empleado'
@@ -20,24 +20,24 @@ class Empleado(db.Model):
     fecha_contratacion = db.Column(db.DateTime, nullable=False, default=datetime.now)
     telefono = db.Column(db.String(10),unique=True)
     direccion = db.Column(db.String(255))
-    usuario = db.relationship("Usuario", uselist=False, back_populates="empleado", cascade="all, delete") #one-to-one
+    usuario = db.relationship("Usuario", uselist=False, back_populates="empleado", cascade="all, delete", lazy='subquery') #one-to-one
 
 class TipoUsuario(db.Model):
     __tablename__ = 'tipo_usuario'
     id = db.Column(db.Integer, primary_key=True)
     denominacion_usuario = db.Column(db.String(64))
     descripcion = db.Column(db.String(128))
-    usuarios = db.relationship('Usuario',backref='tipo_usuario')#many-to-one
+    usuarios = db.relationship('Usuario',backref='tipo_usuario', lazy='subquery')#many-to-one
 
 class Reparacion(db.Model):
     __tablename__ = 'reparacion'
     id = db.Column(db.Integer, primary_key=True)
-    fecha_realizacion = db.Column(db.DateTime, nullable=False, default=datetime.now)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id', ondelete='SET NULL'), nullable=True)
     cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id', ondelete='SET NULL'), nullable=True)
     garantia_id = db.Column(db.Integer, db.ForeignKey('garantia.id', ondelete='SET NULL'), nullable=True)
-    reparaciones_detalle = db.relationship('ReparacionDetalle',backref='reparacion', cascade="all, delete")#one-to-many
     total = db.Column(db.Numeric(precision=2))
+    fecha_realizacion = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    reparaciones_detalle = db.relationship('ReparacionDetalle',backref='reparacion', cascade="all, delete",lazy='subquery')#one-to-many
 
 class Cliente(db.Model):
     __tablename__ = 'cliente'
@@ -47,8 +47,8 @@ class Cliente(db.Model):
     email = db.Column(db.String(64),unique=True)
     telefono = db.Column(db.String(10),unique=True)
     fecha_registro = db.Column(db.DateTime, nullable=False, default=datetime.now)
-    vehiculo = db.relationship("Vehiculo", uselist=False, back_populates="cliente", cascade="all, delete")
-    reparaciones = db.relationship('Reparacion',backref='cliente') #one-to-many
+    vehiculo = db.relationship("Vehiculo", uselist=False, back_populates="cliente", cascade="all, delete", lazy='subquery')
+    reparaciones = db.relationship('Reparacion',backref='cliente', lazy='subquery') #one-to-many
 
 class Vehiculo(db.Model):
     __tablename__ = 'vehiculo'
@@ -58,15 +58,14 @@ class Vehiculo(db.Model):
     cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id',ondelete="SET NULL"), nullable=True)
     descripcion = db.Column(db.String(128))
     fecha_registro = db.Column(db.DateTime, nullable=False, default=datetime.now)
-    cliente = db.relationship("Cliente", back_populates="vehiculo")#one-to-one
-
+    cliente = db.relationship("Cliente", back_populates="vehiculo", lazy='subquery')#one-to-one
 
 class Garantia(db.Model):
     __tablename__ = 'garantia'
     id = db.Column(db.Integer, primary_key=True)
     fecha_inicio = db.Column(db.DateTime, nullable=False, default=datetime.now)
     fecha_vencimiento = db.Column(db.DateTime, nullable=False, default=datetime.now()+timedelta(days=15.0))
-    reparaciones = db.relationship('Reparacion', backref='garantia') #one-to-one
+    reparaciones = db.relationship('Reparacion', backref='garantia', lazy='subquery') #one-to-one
 
 class ReparacionDetalle(db.Model):
     __tablename__ = 'reparacion_detalle'
@@ -83,7 +82,7 @@ class Parte(db.Model):
     descripcion_parte = db.Column(db.String(128))
     precio = db.Column(db.Numeric(precision=2))
     reparaciones_detalle = db.relationship('ReparacionDetalle', backref='parte', lazy='subquery')#one-to-many
-    inventario = db.relationship("Inventario", uselist=False, back_populates="parte", cascade=("all, delete"))#one-to-one
+    inventario = db.relationship("Inventario", uselist=False, back_populates="parte", cascade=("all, delete"), lazy='subquery')#one-to-one
 
 class TipoParte(db.Model):
     __tablename__ = 'tipo_parte'
@@ -97,4 +96,4 @@ class Inventario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     parte_id = db.Column(db.Integer, db.ForeignKey('parte.id'))
     cantidad = db.Column(db.Integer)
-    parte = db.relationship("Parte", back_populates="inventario")#one-to-one
+    parte = db.relationship("Parte", back_populates="inventario", lazy='subquery')#one-to-one

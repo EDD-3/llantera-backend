@@ -55,7 +55,7 @@ def update_row(examiner):
 
 def insert_row(examiner):
 
-    missing_fields = verify_fields(examiner.json_data, examiner.model, examiner.unwanted_columns)
+    missing_fields,examiner.json_data = verify_fields(examiner.json_data, examiner.model, examiner.unwanted_columns)
     if len(missing_fields) == 0:
         new_model = examiner.model(**examiner.json_data)
         db.session.add(new_model)
@@ -76,9 +76,14 @@ def verify_fields(json_data, model, unwanted_columns):
             if column.name not in unwanted_columns
         ]
     
+    new_dict = {
+                key:val 
+                for key, val in json_data.items() 
+                if key in table_columns
+        }
 
-    for field in json_data:
+    for field in new_dict:
         if field in table_columns:
                 table_columns.remove(field)
 
-    return table_columns
+    return table_columns, new_dict
