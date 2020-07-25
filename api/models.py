@@ -55,10 +55,11 @@ class Vehiculo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     modelo = db.Column(db.String(64))
     fecha_fabricacion = db.Column(db.Date)
-    cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id'))
-    cliente = db.relationship("Cliente", back_populates="vehiculo")#one-to-one
+    cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id',ondelete="SET NULL"), nullable=True)
     descripcion = db.Column(db.String(128))
     fecha_registro = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    cliente = db.relationship("Cliente", back_populates="vehiculo")#one-to-one
+
 
 class Garantia(db.Model):
     __tablename__ = 'garantia'
@@ -81,7 +82,7 @@ class Parte(db.Model):
     tipo_parte_id = db.Column(db.Integer, db.ForeignKey('tipo_parte.id', ondelete='SET NULL'), nullable=True)
     descripcion_parte = db.Column(db.String(128))
     precio = db.Column(db.Numeric(precision=2))
-    reparaciones_detalle = db.relationship('ReparacionDetalle', backref='parte')#one-to-many
+    reparaciones_detalle = db.relationship('ReparacionDetalle', backref='parte', lazy='subquery')#one-to-many
     inventario = db.relationship("Inventario", uselist=False, back_populates="parte", cascade=("all, delete"))#one-to-one
 
 class TipoParte(db.Model):
@@ -89,7 +90,7 @@ class TipoParte(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     denominacion_parte = db.Column(db.String(64))
     descripcion_tipo_parte = db.Column(db.String(128))
-    partes = db.relationship('Parte',backref='tipo_parte')#one-to-many
+    partes = db.relationship('Parte',backref='tipo_parte',lazy='subquery')#one-to-many
 
 class Inventario(db.Model):
     __tablename__ = 'inventario'
