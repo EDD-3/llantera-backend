@@ -1,47 +1,71 @@
 from flask import Flask, escape, request, Blueprint, current_app, jsonify
-import json
 from api.models import TipoParte
 from api.schemas import TipoParteSchema
-from api import bcrypt, db
+from json import loads as jloads
+from flask_cors import CORS
+from api.utils import helpers
 
 tipo_parte = Blueprint("tipo_parte", __name__)
 tipo_parte_schema = TipoParteSchema()
-
+CORS(tipo_parte)
 
 @tipo_parte.route("/api/tiposParte", methods=["GET"])
-def get_parts():
+def get_part_types():
     try:
-        lst_tipo_parte = []
-        for tipo_parte in TipoParte.query.all():
-            lst_tipo_parte.append(tipo_parte_schema.dump(tipo_parte))
+        return helpers.get_rows(TipoParte,tipo_parte_schema)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    return jsonify(lst_tipo_parte), 200
 
 
 @tipo_parte.route("/api/tipoParte/<id>", methods=["GET"])
-def get_part(id):
+def get_part_type(id):
     try:
-        tipo_parte = TipoParte.query.filter_by(id=id).first()
-        if not tipo_parte:
-            return jsonify({"error": "Invalid id, customer was not found"}), 400
+        examiner = helpers.Examiner(
+            id=id,
+            model=TipoParte,
+            schema=tipo_parte_schema
+        )
+        return helpers.get_row(examiner)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    return tipo_parte_schema.dump(tipo_parte), 200
 
 
 @tipo_parte.route("/api/tipoParte", methods=["POST"])
-def create_part():
+def create_part_type():
     try:
-        nuevo_tipo_parte = json.loads(request.data)
-        tipo_parte = TipoParte(
-            denominacion_parte=nuevo_tipo_parte["denominacion_parte"],
-            descripcion_tipo_parte=nuevo_tipo_parte["descripcion_tipo_parte"],
-
+        examiner = helpers.Examiner(
+            model=TipoParte,
+            schema=tipo_parte_schema,
+            unwanted_columns=['id'],
+            json_data=jloads(request.data)
         )
+        return helpers.insert_row(examiner)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-        db.session.add(tipo_parte)
-        db.session.commit()
-        return jsonify({"Message": "Customer successfully created"}), 200
+@tipo_parte.route("/api/tipoParte/<id>", methods=["DELETE"])
+def delete_part_type(id):
+    try:
+        examiner = helpers.Examiner(
+            id=id,
+            model=TipoParte,
+            schema=tipo_parte_schema
+        )
+        return helpers.delete_row(examiner)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@tipo_parte.route("/api/tipoParte/<id>", methods=["PUT"])
+def update_part_type(id):
+    try:
+        examiner = helpers.Examiner(
+            id=id,
+            model=TipoParte,
+            schema=tipo_parte_schema,
+            unwanted_columns=["id"],
+            json_data=jloads(request.data)
+        )
+        return helpers.update_row(examiner)
     except Exception as e:
         return jsonify({"error": str(e)}), 500

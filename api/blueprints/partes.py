@@ -1,48 +1,73 @@
 from flask import Flask, escape, request, Blueprint, current_app, jsonify
-import json
 from api.models import Parte
 from api.schemas import ParteSchema
-from api import bcrypt, db
+from json import loads as jloads
+from flask_cors import CORS
+from api.utils import helpers
 
 parte = Blueprint("parte", __name__)
 parte_schema = ParteSchema()
-
+CORS(parte)
 
 @parte.route("/api/partes", methods=["GET"])
 def get_parts():
     try:
-        lst_parte = []
-        for parte in Parte.query.all():
-            lst_parte.append(parte_schema.dump(parte))
+        return helpers.get_rows(Parte,parte_schema)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    return jsonify(lst_parte), 200
 
 
 @parte.route("/api/parte/<id>", methods=["GET"])
 def get_part(id):
     try:
-        parte = Parte.query.filter_by(id=id).first()
-        if not parte:
-            return jsonify({"error": "Invalid id, customer was not found"}), 400
+        examiner = helpers.Examiner(
+            id=id,
+            model=Parte,
+            schema=parte_schema
+        )
+        return helpers.get_row(examiner)
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    return parte_schema.dump(parte), 200
 
 
 @parte.route("/api/parte", methods=["POST"])
 def create_part():
     try:
-        nuevo_parte = json.loads(request.data)
-        parte = Parte(
-            nombre_parte=nuevo_parte["nombre_parte"],
-            tipo_parte_id=nuevo_parte["tipo_parte_id"],
-            descripcion_parte=nuevo_parte["descripcion_parte"],
-            precio=nuevo_parte["precio"],
+        examiner = helpers.Examiner(
+            model=Parte,
+            schema=parte_schema,
+            unwanted_columns=['id'],
+            json_data=jloads(request.data)
         )
+        return helpers.insert_row(examiner)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-        db.session.add(parte)
-        db.session.commit()
-        return jsonify({"Message": "Customer successfully created"}), 200
+
+@parte.route("/api/parte/<id>", methods=["DELETE"])
+def delete_part(id):
+    try:
+        examiner = helpers.Examiner(
+            id=id,
+            model=Parte,
+            schema=parte_schema
+        )
+        return helpers.delete_row(examiner)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@parte.route("/api/parte/<id>", methods=["PUT"])
+def update_part(id):
+    try:
+        examiner = helpers.Examiner(
+            id=id,
+            model=Parte,
+            schema=parte_schema,
+            unwanted_columns=["id"],
+            json_data=jloads(request.data)
+        )
+        return helpers.update_row(examiner)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
