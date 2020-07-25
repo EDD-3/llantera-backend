@@ -14,31 +14,22 @@ CORS(usuario)
 @usuario.route("/api/usuarios", methods=["GET"])
 def get_users():
     try:
-        usuarios = []
-
-        for usuario in Usuario.query.all():
-            usuarios.append(usuario_schema.dump(usuario))
-
-        if len(usuarios) == 0:
-            return jsonify({"error": "No users in database"}), 404
-
+        return helpers.get_rows(Usuario, usuario_schema)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-    return jsonify(usuarios), 200
 
 
 
 @usuario.route("/api/usuario/<id>", methods=["GET"])
 def get_user(id):
     try:
-        usuario = Usuario.query.filter_by(id=id).first()
-
-        if usuario is not None:
-            return usuario_schema.dump(usuario), 200
-
-        else:
-            return jsonify({"error": "Invalid id, user was not found"}), 404
+        examiner = helpers.Examiner(
+            id=id,
+            model=Usuario,
+            schema=usuario_schema
+        )
+        return helpers.get_row(examiner)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -69,7 +60,11 @@ def create_user():
     try:
         nuevo_usuario = jloads(request.data)
         nuevo_usuario["contrasena"] = bcrypt.generate_password_hash(nuevo_usuario["contrasena"])
-        examiner = helpers.Examiner(model=Usuario,schema=usuario_schema,unwanted_columns=['id'],json_data=nuevo_usuario)
+        examiner = helpers.Examiner(
+            model=Usuario,
+            schema=usuario_schema,
+            unwanted_columns=['id'],
+            json_data=nuevo_usuario)
 
         return helpers.insert_row(examiner)
 
@@ -81,10 +76,10 @@ def create_user():
 def delete_user(id):
     try:
         examiner = helpers.Examiner(
-            id=id,model=Usuario,schema=usuario_schema
+            id=id,
+            model=Usuario,
+            schema=usuario_schema
         )
-        usuario = Usuario.query.filter_by(id=id).first()
-
         return helpers.delete_row(examiner)
 
     except Exception as e:
@@ -96,7 +91,13 @@ def update_user(id):
     try:
         nuevo_usuario = jloads(request.data)
         nuevo_usuario["contrasena"] = bcrypt.generate_password_hash(nuevo_usuario["contrasena"])
-        examiner = helpers.Examiner(id=id,model=Usuario,schema=usuario_schema,unwanted_columns=['id'],json_data=nuevo_usuario)
+        examiner = helpers.Examiner(
+            id=id,
+            model=Usuario,
+            schema=usuario_schema,
+            unwanted_columns=['id'],
+            json_data=nuevo_usuario
+            )
         return helpers.update_row(examiner)      
     except Exception as e:
         return jsonify({"error": str(e)}), 500

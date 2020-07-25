@@ -35,7 +35,11 @@ def get_client(id):
 @cliente.route("/api/cliente", methods=["POST"])
 def create_client():
     try:
-        examiner = helpers.Examiner(model=Cliente,schema=cliente_schema,unwanted_columns=['id','fecha_registro'],json_data=jloads(request.data))
+        examiner = helpers.Examiner(
+            model=Cliente,
+            schema=cliente_schema,
+            unwanted_columns=['id','fecha_registro'],
+            json_data=jloads(request.data))
         return helpers.insert_row(examiner)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
