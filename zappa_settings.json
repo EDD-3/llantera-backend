@@ -5,9 +5,9 @@
         "profile_name": "default",
         "lambda_description":"Endpoint de llantera",
         "delete_local_zip": false,
-        "project_name": "llantera",
+        "project_name": "llantera-api-ub",
         "runtime": "python3.7",
-        "s3_bucket": "lambda-python-eduardo",
+        "s3_bucket": "llantera-lambda-code",
         "manage_roles":true,
         "timeout_seconds":15
     }

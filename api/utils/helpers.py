@@ -1,7 +1,6 @@
 from flask import jsonify
 from api import db
 
-
 class Examiner(object):
     __slots__=['id','model','schema','unwanted_columns','json_data']
     def __init__(self,id=None,model=None,schema=None,unwanted_columns=None, json_data=None):
@@ -16,7 +15,7 @@ def get_rows(model, schema):
     return jsonify([ schema.dump(m) for m in model.query.all() ])
 
 def get_row(examiner):
-    row = examiner.model.query.filter_by(id=examiner.id).first()
+    row = examiner.model.query.filter_by( id=examiner.id ).first()
 
     if row is not None:
         return examiner.schema.dump(row),200
@@ -24,7 +23,7 @@ def get_row(examiner):
         return jsonify({"error": "Invalid id, row was not found"}), 404
 
 def delete_row(examiner):
-    row = examiner.model.query.filter_by(id=examiner.id).first()
+    row = examiner.model.query.filter_by( id=examiner.id ).first()
 
     if row is not None:
         db.session.delete(row)
@@ -36,15 +35,15 @@ def delete_row(examiner):
 
 def update_row(examiner):
 
-    missing_fields = verify_fields(examiner.json_data, examiner.model, examiner.unwanted_columns)
+    missing_fields,examiner.json_data = verify_fields( examiner.json_data, examiner.model, examiner.unwanted_columns )
     
     if len(missing_fields) == 0:
-        row = examiner.model.query.filter_by(id=examiner.id).first()
+        row = examiner.model.query.filter_by( id=examiner.id ).first()
 
         if row is not None:
-            examiner.model.query.filter_by(id=examiner.id).update(examiner.json_data)
+            examiner.model.query.filter_by( id=examiner.id ).update(examiner.json_data)
             db.session.commit()
-            row = examiner.model.query.filter_by(id=examiner.id).first()
+            row = examiner.model.query.filter_by( id=examiner.id ).first()
             return examiner.schema.dump(row)
 
         else:
@@ -55,7 +54,7 @@ def update_row(examiner):
 
 def insert_row(examiner):
 
-    missing_fields,examiner.json_data = verify_fields(examiner.json_data, examiner.model, examiner.unwanted_columns)
+    missing_fields,examiner.json_data = verify_fields( examiner.json_data, examiner.model, examiner.unwanted_columns )
     if len(missing_fields) == 0:
         new_model = examiner.model(**examiner.json_data)
         db.session.add(new_model)
@@ -70,9 +69,10 @@ def insert_row(examiner):
 
 
 def verify_fields(json_data, model, unwanted_columns):
+
     table_columns = [
             column.name
-            for column in model.__table__.columns
+            for column in frozenset(model.__table__.columns)
             if column.name not in unwanted_columns
         ]
     
@@ -82,8 +82,6 @@ def verify_fields(json_data, model, unwanted_columns):
                 if key in table_columns
         }
 
-    for field in new_dict:
-        if field in table_columns:
-                table_columns.remove(field)
+    table_columns = set(table_columns) - set(new_dict)
 
     return table_columns, new_dict
