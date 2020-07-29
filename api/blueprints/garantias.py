@@ -37,7 +37,7 @@ def create_warranty():
         examiner = helpers.Examiner(
             model=Garantia,
             schema=garantia_schema,
-            unwanted_columns=['id','fecha_vencimiento'],
+            unwanted_columns=['id','fecha_vencimiento', 'fecha_inicio'],
             json_data=jloads(request.data)
         )
         return helpers.insert_row(examiner)
@@ -65,7 +65,7 @@ def update_warranty(id):
             id=id,
             model=Garantia,
             schema=garantia_schema,
-            unwanted_columns=["id",'fecha_vencimiento'],
+            unwanted_columns=["id",'fecha_vencimiento', 'fecha_inicio'],
             json_data=jloads(request.data)
         )
         return helpers.update_row(examiner)

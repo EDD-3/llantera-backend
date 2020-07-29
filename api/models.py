@@ -63,7 +63,7 @@ class Vehiculo(db.Model):
 class Garantia(db.Model):
     __tablename__ = 'garantia'
     id = db.Column(db.Integer, primary_key=True)
-    fecha_inicio = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    fecha_inicio = db.Column(db.DateTime, nullable=False, default=datetime.now()+timedelta(hours=-7))
     fecha_vencimiento = db.Column(db.DateTime, nullable=False, default=datetime.now()+timedelta(days=15.0,hours=-7))
     reparaciones = db.relationship('Reparacion', backref='garantia', lazy='subquery') #one-to-one
 

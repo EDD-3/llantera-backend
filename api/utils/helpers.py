@@ -35,7 +35,7 @@ def delete_row(examiner):
 
 def update_row(examiner):
 
-    missing_fields,examiner.json_data = verify_fields( examiner.json_data, examiner.model, examiner.unwanted_columns )
+    missing_fields,examiner.json_data = verify_fields_and_json_data( examiner.json_data, examiner.model, examiner.unwanted_columns )
     
     if len(missing_fields) == 0:
         row = examiner.model.query.filter_by( id=examiner.id ).first()
@@ -54,7 +54,7 @@ def update_row(examiner):
 
 def insert_row(examiner):
 
-    missing_fields,examiner.json_data = verify_fields( examiner.json_data, examiner.model, examiner.unwanted_columns )
+    missing_fields,examiner.json_data = verify_fields_and_json_data( examiner.json_data, examiner.model, examiner.unwanted_columns )
     if len(missing_fields) == 0:
         new_model = examiner.model(**examiner.json_data)
         db.session.add(new_model)
@@ -68,7 +68,7 @@ def insert_row(examiner):
         return jsonify({"missing fields": missing_fields}), 400
 
 
-def verify_fields(json_data, model, unwanted_columns):
+def verify_fields_and_json_data(json_data, model, unwanted_columns):
 
     table_columns = [
             column.name
@@ -76,12 +76,14 @@ def verify_fields(json_data, model, unwanted_columns):
             if column.name not in unwanted_columns
         ]
     
-    new_dict = {
+    new_json_data = {
                 key:val 
                 for key, val in json_data.items() 
                 if key in table_columns
         }
 
-    table_columns = set(table_columns) - set(new_dict)
+    for field in frozenset(new_json_data):
+        if field in table_columns:
+            table_columns.remove(field)
 
-    return table_columns, new_dict
+    return table_columns, new_json_data
