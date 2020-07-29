@@ -54,7 +54,7 @@ class Vehiculo(db.Model):
     __tablename__ = 'vehiculo'
     id = db.Column(db.Integer, primary_key=True)
     modelo = db.Column(db.String(64))
-    fecha_fabricacion = db.Column(db.Date)
+    fecha_fabricacion = db.Column(db.String(64))
     cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id',ondelete="SET NULL"), nullable=True)
     descripcion = db.Column(db.String(128))
     fecha_registro = db.Column(db.DateTime, nullable=False, default=datetime.now()+timedelta(hours=-6))
