@@ -17,7 +17,7 @@ class Empleado(db.Model):
     nombre = db.Column(db.String(64))
     apellidos = db.Column(db.String(128))
     email = db.Column(db.String(128),unique=True)
-    fecha_contratacion = db.Column(db.DateTime, nullable=False, default=datetime.now()+timedelta(hours=-7))
+    fecha_contratacion = db.Column(db.DateTime, nullable=False, default=datetime.now()+timedelta(hours=-6))
     telefono = db.Column(db.String(10),unique=True)
     direccion = db.Column(db.String(255))
     usuario = db.relationship("Usuario", uselist=False, back_populates="empleado", cascade="all, delete", lazy='subquery') #one-to-one
@@ -36,7 +36,7 @@ class Reparacion(db.Model):
     cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id', ondelete='SET NULL'), nullable=True)
     garantia_id = db.Column(db.Integer, db.ForeignKey('garantia.id', ondelete='SET NULL'), nullable=True)
     total = db.Column(db.Numeric(precision=2))
-    fecha_realizacion = db.Column(db.DateTime, nullable=False, default=datetime.now()+timedelta(hours=-7))
+    fecha_realizacion = db.Column(db.DateTime, nullable=False, default=datetime.now()+timedelta(hours=-6))
     reparaciones_detalle = db.relationship('ReparacionDetalle',backref='reparacion', cascade="all, delete",lazy='subquery')#one-to-many
 
 class Cliente(db.Model):
@@ -46,7 +46,7 @@ class Cliente(db.Model):
     apellidos = db.Column(db.String(128))
     email = db.Column(db.String(64),unique=True)
     telefono = db.Column(db.String(10),unique=True)
-    fecha_registro = db.Column(db.DateTime, nullable=False, default=datetime.now()+timedelta(hours=-7))
+    fecha_registro = db.Column(db.DateTime, nullable=False, default=datetime.now()+timedelta(hours=-6))
     vehiculo = db.relationship("Vehiculo", uselist=False, back_populates="cliente", cascade="all, delete", lazy='subquery')
     reparaciones = db.relationship('Reparacion',backref='cliente', lazy='subquery') #one-to-many
 
@@ -57,14 +57,14 @@ class Vehiculo(db.Model):
     fecha_fabricacion = db.Column(db.Date)
     cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id',ondelete="SET NULL"), nullable=True)
     descripcion = db.Column(db.String(128))
-    fecha_registro = db.Column(db.DateTime, nullable=False, default=datetime.now()+timedelta(hours=-7))
+    fecha_registro = db.Column(db.DateTime, nullable=False, default=datetime.now()+timedelta(hours=-6))
     cliente = db.relationship("Cliente", back_populates="vehiculo", lazy='subquery')#one-to-one
 
 class Garantia(db.Model):
     __tablename__ = 'garantia'
     id = db.Column(db.Integer, primary_key=True)
-    fecha_inicio = db.Column(db.DateTime, nullable=False, default=datetime.now()+timedelta(hours=-7))
-    fecha_vencimiento = db.Column(db.DateTime, nullable=False, default=datetime.now()+timedelta(days=15.0,hours=-7))
+    fecha_inicio = db.Column(db.DateTime, nullable=False, default=datetime.now()+timedelta(hours=-6))
+    fecha_vencimiento = db.Column(db.DateTime, nullable=False, default=datetime.now()+timedelta(days=15.0,hours=-6))
     reparaciones = db.relationship('Reparacion', backref='garantia', lazy='subquery') #one-to-one
 
 class ReparacionDetalle(db.Model):
