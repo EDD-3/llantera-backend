@@ -1,9 +1,11 @@
 from flask import jsonify
 from api import db
 
+
 class Examiner(object):
-    __slots__=['id','model','schema','unwanted_columns','json_data']
-    def __init__(self,id=None,model=None,schema=None,unwanted_columns=None, json_data=None):
+    __slots__ = ['id', 'model', 'schema', 'unwanted_columns', 'json_data']
+
+    def __init__(self, id=None, model=None, schema=None, unwanted_columns=None, json_data=None):
         self.id = id
         self.model = model
         self.schema = schema
@@ -12,18 +14,20 @@ class Examiner(object):
 
 
 def get_rows(model, schema):
-    return jsonify([ schema.dump(m) for m in model.query.all() ])
+    return jsonify([schema.dump(m) for m in model.query.all()])
+
 
 def get_row(examiner):
-    row = examiner.model.query.filter_by( id=examiner.id ).first()
+    row = examiner.model.query.filter_by(id=examiner.id).first()
 
     if row is not None:
-        return examiner.schema.dump(row),200
+        return examiner.schema.dump(row), 200
     else:
         return jsonify({"error": "Invalid id, row was not found"}), 404
 
+
 def delete_row(examiner):
-    row = examiner.model.query.filter_by( id=examiner.id ).first()
+    row = examiner.model.query.filter_by(id=examiner.id).first()
 
     if row is not None:
         db.session.delete(row)
@@ -33,9 +37,11 @@ def delete_row(examiner):
     else:
         return jsonify({"error": "Invalid id, row was not found"}), 404
 
+
 def update_row(examiner):
 
-    missing_fields,examiner.json_data = verify_fields_and_json_data( examiner.json_data, examiner.model, examiner.unwanted_columns )
+    missing_fields, examiner.json_data = verify_fields_and_json_data(examiner.json_data, examiner.model,
+    examiner.unwanted_columns )
     
     if len(missing_fields) == 0:
         row = examiner.model.query.filter_by( id=examiner.id ).first()
@@ -51,6 +57,7 @@ def update_row(examiner):
 
     else:
          return jsonify({"missing fields": missing_fields}), 400
+
 
 def insert_row(examiner):
 
@@ -75,10 +82,9 @@ def verify_fields_and_json_data(json_data, model, unwanted_columns):
             for column in frozenset(model.__table__.columns)
             if column.name not in unwanted_columns
         ]
-    
     new_json_data = {
-                key:val 
-                for key, val in json_data.items() 
+                key: val
+                for key, val in json_data.items()
                 if key in table_columns
         }
 
