@@ -126,6 +126,7 @@ class Garantia(db.Model):
         nullable=False,
         default=datetime.now() + timedelta(days=15.0, hours=-6),
     )
+    codigo = db.Column(db.String(255), nullable=True)
     reparaciones = db.relationship(
         "Reparacion", backref="garantia", lazy="subquery"
     )  # one-to-one

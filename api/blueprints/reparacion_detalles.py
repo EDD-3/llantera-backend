@@ -32,7 +32,7 @@ def get_repair_detail(id):
 
 
 @reparacion_detalle.route("/api/reparacionDetalle", methods=["POST"])
-def create_part_type():
+def create_repair_detail():
     try:
         examiner = helpers.Examiner(
             model=ReparacionDetalle,
@@ -45,7 +45,7 @@ def create_part_type():
         return jsonify({"error": str(e)}), 500
 
 @reparacion_detalle.route("/api/reparacionDetalle/<id>", methods=["DELETE"])
-def delete_part_type(id):
+def delete_repair_detail(id):
     try:
         examiner = helpers.Examiner(
             id=id,
@@ -58,7 +58,7 @@ def delete_part_type(id):
 
 
 @reparacion_detalle.route("/api/reparacionDetalle/<id>", methods=["PUT"])
-def update_part_type(id):
+def update_repair_detail(id):
     try:
         examiner = helpers.Examiner(
             id=id,
